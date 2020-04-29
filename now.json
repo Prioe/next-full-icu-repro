@@ -1,0 +1,9 @@
+{
+  "build": {
+    "env": {
+      "NODE_ICU_DATA": "node_modules/full-icu/icudt64l.dat"
+    }
+  },
+  "env": {
+  }
+}
