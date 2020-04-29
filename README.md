@@ -1,30 +1,40 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/zeit/next.js/tree/canary/packages/create-next-app).
+## full-icu Repro
 
-## Getting Started
+This repository contains a very minimal reproduction of the problem I'm experiencing with [now](https://github.com/zeit/now) and [full-icu](https://github.com/unicode-org/full-icu-npm).
 
-First, run the development server:
+### Running the repro
 
-```bash
-npm run dev
-# or
-yarn dev
+Running the next project locally with `$ now dev` will work fine.
+Deploying to Vercel with `$ now` will fail with
+
+```
+17:02:37.101  Retrieving list of deployment files...
+17:02:37.436  Downloading 8 deployment files...
+17:02:37.658  /node12/bin/node: could not initialize ICU (check NODE_ICU_DATA or --icu-data-dir parameters)
+17:02:37.682  /node12/bin/node: could not initialize ICU (check NODE_ICU_DATA or --icu-data-dir parameters)
+17:02:37.689  /node12/bin/node: could not initialize ICU (check NODE_ICU_DATA or --icu-data-dir parameters)
+17:02:37.696  /node12/bin/node: could not initialize ICU (check NODE_ICU_DATA or --icu-data-dir parameters)
+17:02:38.704  /node12/bin/node: could not initialize ICU (check NODE_ICU_DATA or --icu-data-dir parameters)
+17:02:38.707  Done with "package.json"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Additional Info
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+The problem is caused by the property `.build.env.NODE_ICU_DATA`. If this configuration is removed,
+the node runtime doesn't fulfill the [requirements of react-intl](https://formatjs.io/docs/runtime-requirements#nodejs).
+This will cause this error serverside:
 
-## Learn More
+```
+[React Intl Error MISSING_DATA] Missing locale data for locale: "de" in Intl.NumberFormat. Using default locale: "en" as fallback. See https://github.com/formatjs/react-intl/blob/master/docs/Getting-Started.md#runtime-requirements for more details
+```
 
-To learn more about Next.js, take a look at the following resources:
+And this error clientside:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+Warning: Text content did not match. Server: "4/29/2020" Client: "29.4.2020"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/zeit/next.js/) - your feedback and contributions are welcome!
+### Workaround
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+As a workaround I am currently using is using [Intl.js](https://github.com/andyearnshaw/Intl.js#intljs-and-node).
+But this is not the way react-intl recommends.
