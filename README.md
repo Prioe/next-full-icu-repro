@@ -1,8 +1,12 @@
-## full-icu Repro
+# full-icu Repro
 
 This repository contains a very minimal reproduction of the problem I'm experiencing with [now](https://github.com/zeit/now) and [full-icu](https://github.com/unicode-org/full-icu-npm).
 
-### Running the repro
+## Running the repro
+
+### Case 1
+
+With `.build.env.NODE_ICU_DATA=node_modules/full-icu/icudt64l.dat`
 
 Running the next project locally with `$ now dev` will work fine.
 Deploying to Vercel with `$ now` will fail with
@@ -18,9 +22,19 @@ Deploying to Vercel with `$ now` will fail with
 17:02:38.707  Done with "package.json"
 ```
 
+### Case 2
+
+With `.env.NODE_ICU_DATA=node_modules/full-icu/icudt64l.dat`
+
+Running the next project locally with `$ now dev` will work.
+Deploying to Vercel with `$ now` will also succeed.
+
+The problem which occures in this case is that the SSR-rendered version
+renders the date on the index-page as `M/D/YYYY` but it should be rendered as `D.M.YYYY`.
+
 ### Additional Info
 
-The problem is caused by the property `.build.env.NODE_ICU_DATA`. If this configuration is removed,
+The problem is caused by the property `.build.env.NODE_ICU_DATA` or `.env.NODE_ICU_DATA`. If this configuration is removed,
 the node runtime doesn't fulfill the [requirements of react-intl](https://formatjs.io/docs/runtime-requirements#nodejs).
 This will cause this error serverside:
 
@@ -34,7 +48,7 @@ And this error clientside:
 Warning: Text content did not match. Server: "4/29/2020" Client: "29.4.2020"
 ```
 
-### Workaround
+## Workaround
 
 As a workaround I am currently using is using [Intl.js](https://github.com/andyearnshaw/Intl.js#intljs-and-node).
 But this is not the way react-intl recommends.
